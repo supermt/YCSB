@@ -40,6 +40,10 @@ import static java.nio.charset.StandardCharsets.UTF_8;
  *
  * See {@code rocksdb/README.md} for details.
  */
+
+// modified by Jinghuan YU
+// 2019 Aug 30
+
 public class RocksDBClient extends DB {
 
   static final String PROPERTY_ROCKSDB_DIR = "rocksdb.dir";
@@ -81,6 +85,8 @@ public class RocksDBClient extends DB {
    * @return The initialized and open RocksDB instance.
    */
   private RocksDB initRocksDB() throws IOException, RocksDBException {
+    LOGGER.info("Initializing the RocksDB, checking the target directory");
+
     if(!Files.exists(rocksDbDir)) {
       Files.createDirectories(rocksDbDir);
     }
@@ -99,6 +105,8 @@ public class RocksDBClient extends DB {
       cfOptionss.add(cfOptions);
       cfDescriptors.add(cfDescriptor);
     }
+
+    LOGGER.info("Allocating the thread resources");
 
     final int rocksThreads = Runtime.getRuntime().availableProcessors() * 2;
 
@@ -126,6 +134,9 @@ public class RocksDBClient extends DB {
       for(int i = 0; i < cfNames.size(); i++) {
         COLUMN_FAMILIES.put(cfNames.get(i), new ColumnFamily(cfHandles.get(i), cfOptionss.get(i)));
       }
+
+      LOGGER.info("DB created");
+
       return db;
     }
   }

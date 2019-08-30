@@ -52,7 +52,12 @@ SCRIPT_DIR=$(dirname "$0" 2>/dev/null)
 [ -z "$YCSB_HOME" ] && YCSB_HOME=$(cd "$SCRIPT_DIR/.." || exit; pwd)
 
 # Ensure that any extra CLASSPATH variables are set via setenv.sh
-CLASSPATH=
+
+# Core dependencies from Maven
+CLASSPATH_FILE=$(mktemp)
+mvn -pl com.yahoo.ycsb:core dependency:build-classpath -Dmdep.outputFile=$CLASSPATH_FILE
+CLASSPATH_MVN=$(cat $CLASSPATH_FILE)
+CLASSPATH=$CLASSPATH:$CLASSPATH_MVN
 
 # Pull in customization options
 if [ -r "$YCSB_HOME/bin/setenv.sh" ]; then
@@ -271,6 +276,8 @@ fi
 
 # Get the rest of the arguments
 YCSB_ARGS=$(echo "$@" | cut -d' ' -f3-)
+
+export JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
 
 # About to run YCSB
 echo "$JAVA_HOME/bin/java $JAVA_OPTS -classpath $CLASSPATH $YCSB_CLASS $YCSB_COMMAND -db $BINDING_CLASS $YCSB_ARGS"

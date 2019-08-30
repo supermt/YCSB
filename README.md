@@ -2,7 +2,7 @@
 
 use the following command:
 
-`mvn -pl com.yahoo.ycsb:rocksdb-binding -am clean packages -DskipTests=true`
+`mvn -pl com.yahoo.ycsb:rocksdb-binding -am packages -DskipTests=true`
 
 # The main steps you need to following
 
@@ -25,7 +25,6 @@ refer to the workload profile provided by Yahoo! in `workload` directory, you ca
 ## Step 3. Load and Run
 
 There are two different action in YCSB, if you want to test the write performance or operations need preceeding data like updates, use `load` operation to generate the basic dataset, and test the read performance in `run` operation
-
 
 # How to combine the RocksDB I modified into YCSB?
 
