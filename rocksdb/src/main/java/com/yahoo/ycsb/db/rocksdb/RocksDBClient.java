@@ -17,16 +17,21 @@
 
 package com.yahoo.ycsb.db.rocksdb;
 
-import com.yahoo.ycsb.*;
 import com.yahoo.ycsb.Status;
+import com.yahoo.ycsb.*;
 import net.jcip.annotations.GuardedBy;
 import org.rocksdb.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.*;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.LineNumberReader;
+import java.io.PrintWriter;
 import java.nio.ByteBuffer;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -175,6 +180,8 @@ public class RocksDBClient extends DB {
     }
   }
 
+
+  // read is looking up, for a certain result
   @Override
   public Status read(final String table, final String key, final Set<String> fields,
       final Map<String, ByteIterator> result) {
@@ -196,6 +203,8 @@ public class RocksDBClient extends DB {
     }
   }
 
+
+  // Scan is the range query.
   @Override
   public Status scan(final String table, final String startkey, final int recordcount, final Set<String> fields,
         final Vector<HashMap<String, ByteIterator>> result) {
@@ -223,6 +232,9 @@ public class RocksDBClient extends DB {
     }
   }
 
+  // return none if not exist, it won't create a new one.
+  // it's not practice in real world data, Rocksdb is a LSM
+  // which means it won't look up the key before update.
   @Override
   public Status update(final String table, final String key, final Map<String, ByteIterator> values) {
     //TODO(AR) consider if this would be faster with merge operator
@@ -234,11 +246,12 @@ public class RocksDBClient extends DB {
 
       final ColumnFamilyHandle cf = COLUMN_FAMILIES.get(table).getHandle();
       final Map<String, ByteIterator> result = new HashMap<>();
-      final byte[] currentValues = rocksDb.get(cf, key.getBytes(UTF_8));
-      if(currentValues == null) {
-        return Status.NOT_FOUND;
-      }
-      deserializeValues(currentValues, null, result);
+// modified by Jinghuan YU
+//      final byte[] currentValues = rocksDb.get(cf, key.getBytes(UTF_8));
+//      if(currentValues == null) {
+//        return Status.NOT_FOUND;
+//      }
+//      deserializeValues(currentValues, null, result);
 
       //update
       result.putAll(values);
