@@ -21,6 +21,9 @@ refer to the workload profile provided by Yahoo! in `workload` directory, you ca
 
 `./bin/ycsb load rocksdb -s -P workloads/workloada -p rocksdb.dir=/tmp/ycsb-rocksdb-data`
 
+If you want to start the YCSB with some JAVA options to config JVM or Debugging, use `/bin/ycsb.sh load rocksdb -s -P workloads/workloada -p rocksdb.dir=/tmp/ycsb-rocksdb-data`. Just using shell is okay, but do remember install Python on your computer.
+
+> visit this link [issue](https://github.com/brianfrankcooper/YCSB/pull/908) to complete the dependency.
 
 ## Step 3. Load and Run
 
