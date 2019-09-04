@@ -221,7 +221,7 @@ public class RocksDBClient extends DB {
       OPLOGGER.info("Point," + key);
       return Status.OK;
     } catch (final RocksDBException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getStackTrace().toString(), e);
       return Status.ERROR;
     }
   }
@@ -250,7 +250,7 @@ public class RocksDBClient extends DB {
       OPLOGGER.info("Scan," + startkey + "@" + recordcount);
       return Status.OK;
     } catch (final RocksDBException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getStackTrace().toString(), e);
       return Status.ERROR;
     }
   }
@@ -286,7 +286,7 @@ public class RocksDBClient extends DB {
       return Status.OK;
 
     } catch (final RocksDBException | IOException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getStackTrace().toString(), e);
       return Status.ERROR;
     }
   }
@@ -303,7 +303,7 @@ public class RocksDBClient extends DB {
       OPLOGGER.info("insert," + key);
       return Status.OK;
     } catch (final RocksDBException | IOException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getStackTrace().toString(), e);
       return Status.ERROR;
     }
   }
@@ -320,7 +320,7 @@ public class RocksDBClient extends DB {
       OPLOGGER.info("delete," + key);
       return Status.OK;
     } catch (final RocksDBException e) {
-      LOGGER.error(e.getMessage(), e);
+      LOGGER.error(e.getStackTrace().toString(), e);
       return Status.ERROR;
     }
   }
