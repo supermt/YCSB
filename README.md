@@ -18,8 +18,7 @@ the command is `make rocksdbjavastaticrelease -j8`, there might be some problem 
 ## Step 2. Pick or write your own workload profile
 
 refer to the workload profile provided by Yahoo! in `workload` directory, you can change the command options in following format
-
-`./bin/ycsb load rocksdb -s -P workloads/workloada -p rocksdb.dir=/tmp/ycsb-rocksdb-data`
+~~`./bin/ycsb load rocksdb -s -P workloads/workloada -p rocksdb.dir=/tmp/ycsb-rocksdb-data`~~
 
 If you want to start the YCSB with some JAVA options to config JVM or Debugging, use `/bin/ycsb.sh load rocksdb -s -P workloads/workloada -p rocksdb.dir=/tmp/ycsb-rocksdb-data`. Just using shell is okay, but do remember install Python on your computer.
 
