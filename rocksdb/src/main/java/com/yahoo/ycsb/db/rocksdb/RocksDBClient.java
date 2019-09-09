@@ -40,6 +40,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.FileHandler;
 import java.util.logging.Formatter;
 import java.util.logging.LogRecord;
+import java.util.stream.Collectors;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 
@@ -63,6 +64,7 @@ public class RocksDBClient extends DB {
   private static final ConcurrentMap<String, Lock> COLUMN_FAMILY_LOCKS = new ConcurrentHashMap<>();
   @GuardedBy("RocksDBClient.class")
   private static Path rocksDbDir = null;
+
   @GuardedBy("RocksDBClient.class")
   private static RocksObject dbOptions = null;
   @GuardedBy("RocksDBClient.class")
@@ -70,11 +72,20 @@ public class RocksDBClient extends DB {
   @GuardedBy("RocksDBClient.class")
   private static int references = 0;
 
+  public static List<String> convertUsingJava8(String commaSeparatedStr) {
+    String[] commaSeparatedArr = commaSeparatedStr.split("\\s*,\\s*");
+    List<String> result = Arrays.stream(commaSeparatedArr).collect(Collectors.toList());
+    return result;
+  }
+
   @Override
   public void init() throws DBException {
     synchronized (RocksDBClient.class) {
       if (rocksDb == null) {
+
         rocksDbDir = Paths.get(getProperties().getProperty(PROPERTY_ROCKSDB_DIR));
+
+
         LOGGER.info("RocksDB data dir: " + rocksDbDir);
 
         try {
@@ -82,6 +93,7 @@ public class RocksDBClient extends DB {
         } catch (final IOException | RocksDBException e) {
           throw new DBException(e);
         }
+
       }
 
       references++;
@@ -137,6 +149,11 @@ public class RocksDBClient extends DB {
     LOGGER.info("Allocating the thread resources");
 
     final int rocksThreads = Runtime.getRuntime().availableProcessors() * 2;
+    DbPath sigPath = new DbPath(Paths.get("/home/supermt/rocksdb_nvme"), 10 * 1024 * 1024 * 1024);
+    DbPath secPath = new DbPath(Paths.get("/media/supermt/hdd/dataset"), 1 * 1024 * 1024 * 1024 * 1024);
+    List<DbPath> pathList = new ArrayList<>();
+    pathList.add(sigPath);
+    pathList.add(secPath);
 
     if (cfDescriptors.isEmpty()) {
       final Options options = new Options()
@@ -145,6 +162,7 @@ public class RocksDBClient extends DB {
           .setCreateMissingColumnFamilies(true)
           .setIncreaseParallelism(rocksThreads)
           .setMaxBackgroundCompactions(rocksThreads)
+          .setDbPaths(pathList)
           .setInfoLogLevel(InfoLogLevel.INFO_LEVEL);
       dbOptions = options;
       return RocksDB.open(options, rocksDbDir.toAbsolutePath().toString());
@@ -154,6 +172,7 @@ public class RocksDBClient extends DB {
           .setCreateMissingColumnFamilies(true)
           .setIncreaseParallelism(rocksThreads)
           .setMaxBackgroundCompactions(rocksThreads)
+          .setDbPaths(pathList)
           .setInfoLogLevel(InfoLogLevel.INFO_LEVEL);
       dbOptions = options;
 
