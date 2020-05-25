@@ -2,7 +2,7 @@
 
 use the following command:
 
-`mvn -pl com.yahoo.ycsb:rocksdb-binding -am packages -DskipTests=true`
+`mvn -pl com.yahoo.ycsb:rocksdb-binding -am package -DskipTests=true`
 
 # The main steps you need to following
 
