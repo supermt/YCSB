@@ -28,6 +28,7 @@ import com.datastax.driver.core.Row;
 import com.datastax.driver.core.Session;
 import com.datastax.driver.core.PreparedStatement;
 import com.datastax.driver.core.BoundStatement;
+import com.datastax.driver.core.exceptions.InvalidQueryException;
 import com.datastax.driver.core.querybuilder.Insert;
 import com.datastax.driver.core.querybuilder.QueryBuilder;
 import com.datastax.driver.core.querybuilder.Select;
@@ -88,8 +89,18 @@ public class CassandraCQLClient extends DB {
   public static final String YCSB_KEY = "y_id";
   public static final String KEYSPACE_PROPERTY = "cassandra.keyspace";
   public static final String KEYSPACE_PROPERTY_DEFAULT = "ycsb";
+  public static final String KEYSPACE_CREATE_CQL_PREFIX = "create KEYSPACE ";
+  public static final String KEYSPACE_CREATE_CQL_SUFFIX = " with replication = {\'class\':\'SimpleStrategy\'," +
+      "\'replication_factor\':3};";
+  public static final String CREATE_DEFAULT_KEYSPACE_CQL= KEYSPACE_CREATE_CQL_PREFIX+
+      KEYSPACE_PROPERTY_DEFAULT + KEYSPACE_CREATE_CQL_SUFFIX;
   public static final String USERNAME_PROPERTY = "cassandra.username";
   public static final String PASSWORD_PROPERTY = "cassandra.password";
+
+  public static final String TABLE_CREATE_CQL = "create table usertable(" +
+      "y_id varchar primary key, field0 varchar, field1 varchar, field2 varchar," +
+      " field3 varchar, field4 varchar, field5 varchar, field6 varchar, field7 varchar, " +
+      "field8 varchar, field9 varchar);";
 
   public static final String HOSTS_PROPERTY = "hosts";
   public static final String PORT_PROPERTY = "port";
@@ -145,7 +156,8 @@ public class CassandraCQLClient extends DB {
       if (cluster != null) {
         return;
       }
-
+      String keyspace = getProperties().getProperty(KEYSPACE_PROPERTY,
+          KEYSPACE_PROPERTY_DEFAULT);
       try {
 
         debug =
@@ -163,9 +175,6 @@ public class CassandraCQLClient extends DB {
 
         String username = getProperties().getProperty(USERNAME_PROPERTY);
         String password = getProperties().getProperty(PASSWORD_PROPERTY);
-
-        String keyspace = getProperties().getProperty(KEYSPACE_PROPERTY,
-            KEYSPACE_PROPERTY_DEFAULT);
 
         readConsistencyLevel = ConsistencyLevel.valueOf(
             getProperties().getProperty(READ_CONSISTENCY_LEVEL_PROPERTY,
@@ -228,9 +237,17 @@ public class CassandraCQLClient extends DB {
               discoveredHost.getDatacenter(), discoveredHost.getAddress(),
               discoveredHost.getRack());
         }
-
-        session = cluster.connect(keyspace);
-
+        try{
+          session = cluster.connect(keyspace);
+        }catch (InvalidQueryException e){
+          session = cluster.connect();
+          String query = KEYSPACE_CREATE_CQL_PREFIX + keyspace + KEYSPACE_CREATE_CQL_SUFFIX;
+          System.out.println(query);
+          session.execute(query);
+          session.execute("USE "+keyspace+";");
+        }
+        // create table if not exists
+        session.execute(TABLE_CREATE_CQL);
       } catch (Exception e) {
         throw new DBException(e);
       }
