@@ -35,3 +35,17 @@ There are two different action in YCSB, if you want to test the write performanc
 # How to combine the RocksDB I modified into YCSB?
 
 Just copy the jar file I mentioned in `Step 1.` above into the directory `YCSB/rocksdb/target/dependency` and remove the old ones. And remember! **Make sure the version is the same.**
+
+# Features:
+
+# About real-world data
+We integrate the file workload from [Terark](https://github.com/Terark/YCSB.git), it provides a `file workload` to load real-world data
+
+and here we use [Web data: Amazon movie reviews](https://snap.stanford.edu/data/movies.txt.gz) to generate the data. 
+
+```bash
+git clone https://github.com/Terark/amazon-movies-parser
+cd amazon-movies-parser
+g++ -o parser amazon-moive-parser.cpp -std=c++11
+./parser /path/to/movies.txt /path/to/movies_flat.txt
+```

@@ -1,8 +1,7 @@
-package com.yahoo.ycsb.generator;
+package com.yahoo.ycsb.generator.mixgraph;
 
 import com.yahoo.ycsb.Status;
 
-import java.util.LinkedList;
 import java.util.Random;
 import java.util.Vector;
 
@@ -12,17 +11,18 @@ class KeyrangeUnit {
   public long keyrange_keys;
 }
 
-class Random64 {
-  private MT19937_64 generator_;
-
-  public Random64(long s) {
-    this.generator_ = new MT19937_64(s);
-  }
-  // Generates the next random number
-  long Next() {
-    return generator_.next(64);
-  }
-}
+//class Random64 {
+//  private MT19937_64 generator_;
+//
+//  public Random64(long s) {
+//    this.generator_ = new MT19937_64(s);
+//  }
+//
+//  // Generates the next random number
+//  long Next() {
+//    return generator_.next(64 - 1); // There is no 64-bits unsigned long, generate 63 instead
+//  }
+//}
 
 public class GenerateTwoTermExpKeys {
   public long keyrange_rand_max_;
@@ -44,9 +44,9 @@ public class GenerateTwoTermExpKeys {
 
   // Initiate the KeyrangeUnit vector and calculate the size of each
   // KeyrangeUnit.
-  Status InitiateExpDistribution(long total_keys, double prefix_a,
-                                 double prefix_b, double prefix_c,
-                                 double prefix_d, int keyrange_num) {
+  public Status InitiateExpDistribution(long total_keys, double prefix_a,
+                                        double prefix_b, double prefix_c,
+                                        double prefix_d, long keyrange_num) {
     long amplify = 0;
     long keyrange_start = 0;
     initiated_ = true;
