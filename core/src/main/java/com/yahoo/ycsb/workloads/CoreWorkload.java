@@ -88,7 +88,7 @@ public class CoreWorkload extends Workload {
    */
   public static final String FIELD_COUNT_PROPERTY_DEFAULT = "10";
   
-  private List<String> fieldnames;
+  protected List<String> fieldnames;
 
   /**
    * The name of the property for the field length distribution. Options are "uniform", "zipfian"
@@ -183,7 +183,7 @@ public class CoreWorkload extends Workload {
    * Set to true if want to check correctness of reads. Must also
    * be set to true during loading phase to function.
    */
-  private boolean dataintegrity;
+  protected boolean dataintegrity;
 
   /**
    * The name of the property for the proportion of transactions that are reads.

@@ -18,25 +18,23 @@ enum DistributionType {
   kNormal
 }
 
-public class MixGraphGenerator extends Generator<String> {
+public class MixGraphGenerator extends Generator<MixGraphKey> {
   private RandomModels model;
   protected NumberGenerator fieldlengthgenerator;
   double a, b;
   long num;
-  QueryDecider query;
   GenerateTwoTermExpKeys gen_exp;
   boolean use_prefix_modeling = false;
   boolean use_random_modeling = false;
 
 
-  public MixGraphGenerator(long num, QueryDecider _query,
+  public MixGraphGenerator(long num,
                            double key_dist_a, double key_dist_b,
                            double keyrange_dist_a, double keyrange_dist_b,
                            double keyrange_dist_c, double keyrange_dist_d,
                            long keyrange_num) {
     super();
     this.num = num;
-    this.query = _query;
     this.a = key_dist_a;
     this.b = key_dist_b;
     gen_exp = new GenerateTwoTermExpKeys(num);
@@ -80,6 +78,14 @@ public class MixGraphGenerator extends Generator<String> {
     return gen.toString();
   }
 
+  private long PowerCdfInversion(double u, double a, double b) {
+    // TODO: generate PowerCDFInversion from C++
+    double ret;
+
+    ret = Math.pow((u / a), (1 / b));
+    return (long) (Math.ceil(ret));
+  }
+
   HashMap<String, ByteIterator> RandomString(String key, List<String> fieldnames) {
     HashMap<String, ByteIterator> values = new HashMap<>();
 
@@ -94,10 +100,11 @@ public class MixGraphGenerator extends Generator<String> {
   }
 
   @Override
-  public String nextValue() {
-    long ini_rand, rand_v, key_rand, key_seed;
+  public MixGraphKey nextValue() {
+    long ini_rand, rand_v, key_rand, key_seed = 0;
     ini_rand = fieldlengthgenerator.nextValue().longValue();
     rand_v = ini_rand % num;
+
     double u = (double) (rand_v) / num;
     // Generate the keyID based on the key hotness and prefix hotness
     switch (model) {
@@ -113,19 +120,12 @@ public class MixGraphGenerator extends Generator<String> {
         key_seed = PowerCdfInversion(u, a, b);
         key_rand = (new Random(key_seed).nextLong()) % num;
     }
-    String key = GenerateKeyFromInt(key_rand, num);
-    int query_type = query.GetType(rand_v);
 
-    return key;
-  }
-
-  private long PowerCdfInversion(double u, double a, double b) {
-    // TODO: generate PowerCDFInversion from C++
-    return 0L;
+    return new MixGraphKey(ini_rand, rand_v, key_rand, key_seed,GenerateKeyFromInt(key_rand, num));
   }
 
   @Override
-  public String lastValue() {
+  public MixGraphKey lastValue() {
     return null;
   }
 

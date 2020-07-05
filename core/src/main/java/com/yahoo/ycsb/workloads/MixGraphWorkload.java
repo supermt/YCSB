@@ -87,21 +87,40 @@ public class MixGraphWorkload extends CoreWorkload {
   public static final String VALUE_SIZE_DISTRIBUTION_TYPE_E_PROPERTY = "value_size_distribution_type_e_property";
   public static final String VALUE_SIZE_DISTRIBUTION_TYPE_E_DEFAULT = "kFixed";
 
+  public static final String VALUE_THETA_PROPERTY = "value_theta";
+  public static final String VALUE_K_PROPERTY = "value_k";
+  public static final String VALUE_SIGMA_PROPERTY = "value_sigma";
+
+  public static final String VALUE_THETA_DEFAULT = "0.0";
+  public static final String VALUE_K_DEFAULT = "0.0";
+  public static final String VALUE_SIGMA_DEFAULT = "0.0";
+
+  public static final String ITER_THETA_PROPERTY = "iter_theta";
+  public static final String ITER_K_PROPERTY = "iter_k";
+  public static final String ITER_SIGMA_PROPERTY = "iter_sigma";
+
+  public static final String ITER_THETA_DEFAULT = "0.0";
+  public static final String ITER_K_DEFAULT = "0.0";
+  public static final String ITER_SIGMA_DEFAULT = "0.0";
+
   public static final String VALUE_SIZE_PROPERTY = "value_size";
   public static final String VALUE_SIZE_DEFAULT = "100";
 
 
-  final long default_value_max = 1024 * 1024;
+  final int default_value_max = 1024 * 1024;
 
   // parameters used in workload generation
-  long read = 0;  // including single gets and Next of iterators
+  // operation counter, use the super class
+  long read = 0;
   long gets = 0;
   long puts = 0;
   long found = 0;
+
+
   long seek = 0;
   long seek_found = 0;
   long bytes = 0;
-  long value_max = default_value_max;
+  int value_max = default_value_max;
   double write_rate = 1000000.0;
   double read_rate = 1000000.0;
   boolean use_prefix_modeling = false;
@@ -116,9 +135,14 @@ public class MixGraphWorkload extends CoreWorkload {
   long keyrange_num;
   double key_dist_a;
   double key_dist_b;
+  // The parameters of Generized Pareto Distribution "f(x)=(1/sigma)*(1+k*(x-theta)/sigma)^-(1/k+1)"
+  double value_theta, value_k, value_sigma;
+
+  QueryDecider query;
 
   MixGraphGenerator keysequence;
   double read_random_exp_range_;
+  private double iter_theta, iter_k, iter_sigma;
 
 
   long GetRandomKey(Random64 rand) {
@@ -147,9 +171,18 @@ public class MixGraphWorkload extends CoreWorkload {
     key_dist_a = Double.valueOf(p.getProperty(KEY_DIST_A_PROPERTY, KEY_DIST_A_DEFAULT));
     key_dist_b = Double.valueOf(p.getProperty(KEY_DIST_B_PROPERTY, KEY_DIST_B_DEFAULT));
 
+    value_k = Double.valueOf(p.getProperty(VALUE_K_PROPERTY, VALUE_K_DEFAULT));
+    value_sigma = Double.valueOf(p.getProperty(VALUE_SIGMA_PROPERTY, VALUE_SIGMA_DEFAULT));
+    value_theta = Double.valueOf(p.getProperty(VALUE_THETA_PROPERTY, VALUE_THETA_DEFAULT));
+
+    iter_k = Double.valueOf(p.getProperty(ITER_K_PROPERTY, ITER_K_DEFAULT));
+    iter_sigma = Double.valueOf(p.getProperty(ITER_SIGMA_PROPERTY, ITER_SIGMA_DEFAULT));
+    iter_theta = Double.valueOf(p.getProperty(ITER_THETA_PROPERTY, ITER_THETA_DEFAULT));
+
+
     Status s;
-    if (value_max > Long.valueOf(p.getProperty(MIX_MAX_VALUE_SIZE_PROPERTY, MIX_MAX_VALUE_SIZE_DEFAULT))) {
-      value_max = Long.valueOf(p.getProperty(MIX_MAX_VALUE_SIZE_PROPERTY, MIX_MAX_VALUE_SIZE_DEFAULT));
+    if (value_max > Integer.valueOf(p.getProperty(MIX_MAX_VALUE_SIZE_PROPERTY, MIX_MAX_VALUE_SIZE_DEFAULT))) {
+      value_max = Integer.valueOf(p.getProperty(MIX_MAX_VALUE_SIZE_PROPERTY, MIX_MAX_VALUE_SIZE_DEFAULT));
     }
 
 
@@ -158,28 +191,23 @@ public class MixGraphWorkload extends CoreWorkload {
     QueryDecider query = new QueryDecider();
 
     query.Initiate(ratio);
-    // the limit of qps initiation
-    // TODO: discuss whether we need RateLimiter or not
-
-    createMixGraph();
-
-    keysequence = new MixGraphGenerator(num, query, key_dist_a, key_dist_b,
+    keysequence = new MixGraphGenerator(num, key_dist_a, key_dist_b,
         keyrange_dist_a, keyrange_dist_b, keyrange_dist_c, keyrange_dist_d, keyrange_num);
     // initiate finished
 
+    // the limit of qps initiation
+    // TODO: discuss whether we need RateLimiter or not?
 
-  }
+    read_rate = 1000000.0; // how quick the read operation query stream is.
+    write_rate = 100000.0;
 
-
-  public void createMixGraph() {
   }
 
   @Override
   public boolean doInsert(DB db, Object threadstate) {
     // TODO: replace this keysequence generation function to mixgraph workload
-    String dbkey = keysequence.nextValue();
-
-//    int keynum = keysequence.nextValue().nextInt();
+    // this will only be called in the load process
+    String dbkey = keysequence.nextValue().getKeyString();
 //    String dbkey = buildKeyName(keynum); we use rocksdb' generator
     HashMap<String, ByteIterator> values = super.buildValues(dbkey);
 
@@ -211,4 +239,119 @@ public class MixGraphWorkload extends CoreWorkload {
     return null != status && status.isOk();
   }
 
+
+  public void doTransactionRead(DB db, MixGraphKey key) {
+    String keyname = key.getKeyString();
+
+    HashSet<String> fields = null;
+
+    if (!readallfields) {
+      // read a random field
+      String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+      fields = new HashSet<String>();
+      fields.add(fieldname);
+    } else if (dataintegrity) {
+      // pass the full field list if dataintegrity is on for verification
+      fields = new HashSet<String>(fieldnames);
+    }
+
+    HashMap<String, ByteIterator> cells = new HashMap<String, ByteIterator>();
+    db.read(table, keyname, fields, cells);
+
+    if (super.dataintegrity) {
+      verifyRow(keyname, cells);
+    }
+
+  }
+
+  @Override
+  public boolean doTransaction(DB db, Object threadstate) {
+    MixGraphKey key = keysequence.nextValue();
+    switch (query.GetType(key.rand_v)) {
+      case 0:
+        // get
+        doTransactionRead(db, key);
+        break;
+      case 1:
+        // put
+        doTransactionInsert(db, key);
+        break;
+      case 2:
+        // seek/scan
+        doTransactionScan(db, key);
+        break;
+      default:
+        // there is no other options
+    }
+    return true;
+  }
+
+  private void doTransactionScan(DB db, MixGraphKey key) {
+    int scan_length = (int) (ParetoCdfInversion((double) key.rand_v / num, iter_theta, iter_k, iter_sigma)
+        % scan_len_max);
+    HashSet<String> fields = null;
+
+    if (!readallfields) {
+      // read a random field
+      String fieldname = fieldnames.get(fieldchooser.nextValue().intValue());
+
+      fields = new HashSet<String>();
+      fields.add(fieldname);
+    }
+    db.scan(table, key.getKeyString(), scan_length, fields, new Vector<HashMap<String, ByteIterator>>());
+
+  }
+
+  private void doTransactionInsert(DB db, MixGraphKey key) {
+    int val_size = ParetoCdfInversion((double) key.rand_v / num, value_theta, value_k, value_sigma);
+    if (val_size < 0) {
+      val_size = 10;
+    } else if (val_size > value_max) {
+      val_size = val_size % value_max;
+    }
+
+    HashMap<String, ByteIterator> values = buildValues(key.getKeyString(), (int) (val_size / fieldcount));
+    db.insert(table, key.getKeyString(), values);
+  }
+
+  protected HashMap<String, ByteIterator> buildValues(String key, int size) {
+    HashMap<String, ByteIterator> values = new HashMap<>();
+
+    for (String fieldkey : fieldnames) {
+      ByteIterator data;
+      if (dataintegrity) {
+        data = new StringByteIterator(buildFixedLengthDeterministicValue(key, fieldkey, size));
+      } else {
+        // fill with random data
+        data = new RandomByteIterator(fieldlengthgenerator.nextValue().longValue());
+      }
+      values.put(fieldkey, data);
+    }
+    return values;
+  }
+
+  private String buildFixedLengthDeterministicValue(String key, String fieldkey, int size) {
+    StringBuilder sb = new StringBuilder(size);
+    sb.append(key);
+    sb.append(':');
+    sb.append(fieldkey);
+    while (sb.length() < size) {
+      sb.append(':');
+      sb.append(sb.toString().hashCode());
+    }
+    sb.setLength(size);
+
+    return sb.toString();
+  }
+
+  private int ParetoCdfInversion(double u, double theta, double k, double sigma) {
+    double ret;
+    if (k == 0.0) {
+      ret = theta - sigma * Math.log(u);
+    } else {
+      ret = theta + sigma * (Math.pow(u, -1 * k) - 1) / k;
+    }
+    return (int) Math.ceil(ret);
+  }
 }
