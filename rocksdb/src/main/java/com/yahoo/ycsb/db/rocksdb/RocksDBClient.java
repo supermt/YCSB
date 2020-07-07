@@ -59,7 +59,7 @@ public class RocksDBClient extends DB {
   private static final String COLUMN_FAMILY_NAMES_FILENAME = "CF_NAMES";
 
   private static final Logger LOGGER = LoggerFactory.getLogger(RocksDBClient.class);
-  private static final java.util.logging.Logger OPLOGGER = java.util.logging.Logger.getLogger("OPs");
+  //  private static final java.util.logging.Logger OPLOGGER = java.util.logging.Logger.getLogger("OPs");
   private static final ConcurrentMap<String, ColumnFamily> COLUMN_FAMILIES = new ConcurrentHashMap<>();
   private static final ConcurrentMap<String, Lock> COLUMN_FAMILY_LOCKS = new ConcurrentHashMap<>();
   @GuardedBy("RocksDBClient.class")
@@ -116,22 +116,23 @@ public class RocksDBClient extends DB {
 
     // use an additional file logger to record the operations;
     Properties properties = this.getProperties();
-    String op = properties.getProperty(com.yahoo.ycsb.Client.DO_TRANSACTIONS_PROPERTY);
+//    String op = properties.getProperty(com.yahoo.ycsb.Client.DO_TRANSACTIONS_PROPERTY);
     // use this sentence to remove console prints.
-    OPLOGGER.setUseParentHandlers(false);
+//    OPLOGGER.setUseParentHandlers(false);
 
-    if (Boolean.parseBoolean(op)) {
-      op = "/run_log.txt";
-    } else {
-      op = "/load_log.txt";
-    }
+//    if (Boolean.parseBoolean(op)) {
+//      op = "/run_log.txt";
+//    } else {
+//      op = "/load_log.txt";
+//    }
 
-    FileHandler file = new FileHandler(rocksDbDir.toAbsolutePath().toString() + op);
-    OPLOGGER.addHandler(file);
-    file.setFormatter(new TimelessFormat());
+//    FileHandler file = new FileHandler(rocksDbDir.toAbsolutePath().toString() + op);
+//    OPLOGGER.addHandler(file);
+//    file.setFormatter(new TimelessFormat());
 
 
     final List<String> cfNames = loadColumnFamilyNames();
+
     final List<ColumnFamilyOptions> cfOptionss = new ArrayList<>();
     final List<ColumnFamilyDescriptor> cfDescriptors = new ArrayList<>();
 
@@ -148,21 +149,20 @@ public class RocksDBClient extends DB {
 
     LOGGER.info("Allocating the thread resources");
 
-    final int rocksThreads = Runtime.getRuntime().availableProcessors() * 2;
-    DbPath sigPath = new DbPath(Paths.get("/home/supermt/rocksdb_nvme"), 10 * 1024 * 1024 * 1024);
-    DbPath secPath = new DbPath(Paths.get("/media/supermt/hdd/dataset"), 1 * 1024 * 1024 * 1024 * 1024);
-    List<DbPath> pathList = new ArrayList<>();
-    pathList.add(sigPath);
-    pathList.add(secPath);
+//    final int rocksThreads = Runtime.getRuntime().availableProcessors() * 2;
+//    DbPath sigPath = new DbPath(Paths.get("/home/supermt/rocksdb_nvme"), 10 * 1024 * 1024 * 1024);
+//    DbPath secPath = new DbPath(Paths.get("/media/supermt/hdd/dataset"), 1 * 1024 * 1024 * 1024 * 1024);
+//    List<DbPath> pathList = new ArrayList<>();
+//    pathList.add(sigPath);
+//    pathList.add(secPath);
 
     if (cfDescriptors.isEmpty()) {
       final Options options = new Options()
           .optimizeLevelStyleCompaction()
           .setCreateIfMissing(true)
           .setCreateMissingColumnFamilies(true)
-          .setIncreaseParallelism(rocksThreads)
-          .setMaxBackgroundCompactions(rocksThreads)
-          .setDbPaths(pathList)
+//          .setIncreaseParallelism(rocksThreads)
+//          .setMaxBackgroundCompactions(rocksThreads)
           .setInfoLogLevel(InfoLogLevel.INFO_LEVEL);
       dbOptions = options;
       return RocksDB.open(options, rocksDbDir.toAbsolutePath().toString());
@@ -170,9 +170,9 @@ public class RocksDBClient extends DB {
       final DBOptions options = new DBOptions()
           .setCreateIfMissing(true)
           .setCreateMissingColumnFamilies(true)
-          .setIncreaseParallelism(rocksThreads)
-          .setMaxBackgroundCompactions(rocksThreads)
-          .setDbPaths(pathList)
+//          .setIncreaseParallelism(rocksThreads)
+//          .setMaxBackgroundCompactions(rocksThreads)
+//          .setDbPaths(pathList)
           .setInfoLogLevel(InfoLogLevel.INFO_LEVEL);
       dbOptions = options;
 
@@ -237,7 +237,7 @@ public class RocksDBClient extends DB {
         return Status.NOT_FOUND;
       }
       deserializeValues(values, fields, result);
-      OPLOGGER.info("Point," + key);
+//      OPLOGGER.info("Point," + key);
       return Status.OK;
     } catch (final RocksDBException e) {
       LOGGER.error(e.getStackTrace().toString(), e);
@@ -266,7 +266,7 @@ public class RocksDBClient extends DB {
         }
       }
 
-      OPLOGGER.info("Scan," + startkey + "@" + recordcount);
+//      OPLOGGER.info("Scan," + startkey + "@" + recordcount);
       return Status.OK;
     } catch (final RocksDBException e) {
       LOGGER.error(e.getStackTrace().toString(), e);
@@ -301,7 +301,7 @@ public class RocksDBClient extends DB {
       //store
       rocksDb.put(cf, key.getBytes(UTF_8), serializeValues(result));
 
-      OPLOGGER.info("update," + key);
+//      OPLOGGER.info("update," + key);
       return Status.OK;
 
     } catch (final RocksDBException | IOException e) {
@@ -319,7 +319,7 @@ public class RocksDBClient extends DB {
 
       final ColumnFamilyHandle cf = COLUMN_FAMILIES.get(table).getHandle();
       rocksDb.put(cf, key.getBytes(UTF_8), serializeValues(values));
-      OPLOGGER.info("insert," + key);
+//      OPLOGGER.info("insert," + key);
       return Status.OK;
     } catch (final RocksDBException | IOException e) {
       LOGGER.error(e.getStackTrace().toString(), e);
@@ -336,7 +336,7 @@ public class RocksDBClient extends DB {
 
       final ColumnFamilyHandle cf = COLUMN_FAMILIES.get(table).getHandle();
       rocksDb.delete(cf, key.getBytes(UTF_8));
-      OPLOGGER.info("delete," + key);
+//      OPLOGGER.info("delete," + key);
       return Status.OK;
     } catch (final RocksDBException e) {
       LOGGER.error(e.getStackTrace().toString(), e);

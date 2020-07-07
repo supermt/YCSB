@@ -78,7 +78,7 @@ public class MixGraphWorkload extends CoreWorkload {
 
   public static final String VALUE_SIZE_MAX_PROPERTY = "value_size_max";
   public static final String VALUE_SIZE_MAX_DEFAULT = "102400";
-  public static final String VALUE_SIZE_MIN_PROPERTY = "value_size_max";
+  public static final String VALUE_SIZE_MIN_PROPERTY = "value_size_min";
   public static final String VALUE_SIZE_MIN_DEFAULT = "1";
 
   public static final String MIX_MAX_VALUE_SIZE_PROPERTY = "mix_max_value_size";
@@ -103,8 +103,16 @@ public class MixGraphWorkload extends CoreWorkload {
   public static final String ITER_K_DEFAULT = "0.0";
   public static final String ITER_SIGMA_DEFAULT = "0.0";
 
-  public static final String VALUE_SIZE_PROPERTY = "value_size";
-  public static final String VALUE_SIZE_DEFAULT = "100";
+  public static final String KEY_SIZE_PROPERTY = "key_size";
+  public static final String KEY_SIZE_DEFAULT = "10";
+  public static final String KEYS_PER_PREFIX_PROPERTY = "keys_per_prefix";
+  public static final String PREFIX_SIZE_PROPERTY = "prefix_size";
+  public static final String KEYS_PER_PREFIX_DEFAULT = "0";
+  public static final String PREFIX_SIZE_DEFAULT = "0";
+
+
+//  public static final String VALUE_SIZE_PROPERTY = "value_size";
+//  public static final String VALUE_SIZE_DEFAULT = "100";
 
 
   final int default_value_max = 1024 * 1024;
@@ -143,6 +151,7 @@ public class MixGraphWorkload extends CoreWorkload {
   MixGraphGenerator keysequence;
   double read_random_exp_range_;
   private double iter_theta, iter_k, iter_sigma;
+  private int key_size, keys_per_prefix, prefix_size;
 
 
   long GetRandomKey(Random64 rand) {
@@ -166,6 +175,13 @@ public class MixGraphWorkload extends CoreWorkload {
     keyrange_dist_c = Double.valueOf(p.getProperty(KEYRANGE_DIST_C_PROPERTY, KEYRANGE_DIST_C_DEFAULT));
     keyrange_dist_d = Double.valueOf(p.getProperty(KEYRANGE_DIST_D_PROPERTY, KEYRANGE_DIST_D_DEFAULT));
     num = Long.valueOf(p.getProperty(NUM_PROPERTY, NUM_DEFAULT));
+
+    num = Math.max(super.recordcount, num);
+
+    key_size = Integer.valueOf(p.getProperty(KEY_SIZE_PROPERTY, KEY_SIZE_DEFAULT));
+    keys_per_prefix = Integer.valueOf(p.getProperty(KEYS_PER_PREFIX_PROPERTY, KEYS_PER_PREFIX_DEFAULT));
+    prefix_size = Integer.valueOf(p.getProperty(PREFIX_SIZE_PROPERTY, PREFIX_SIZE_DEFAULT));
+
     keyrange_num = Integer.valueOf(p.getProperty(KEYRANGE_NUM_PROPERTY, KEYRANGE_NUM_DEFAULT));
 
     key_dist_a = Double.valueOf(p.getProperty(KEY_DIST_A_PROPERTY, KEY_DIST_A_DEFAULT));
@@ -192,7 +208,8 @@ public class MixGraphWorkload extends CoreWorkload {
 
     query.Initiate(ratio);
     keysequence = new MixGraphGenerator(num, key_dist_a, key_dist_b,
-        keyrange_dist_a, keyrange_dist_b, keyrange_dist_c, keyrange_dist_d, keyrange_num);
+        keyrange_dist_a, keyrange_dist_b, keyrange_dist_c, keyrange_dist_d, keyrange_num,
+        key_size, keys_per_prefix, prefix_size);
     // initiate finished
 
     // the limit of qps initiation

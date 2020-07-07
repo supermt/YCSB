@@ -2,6 +2,8 @@ package com.yahoo.ycsb.generator.mixgraph;
 
 import com.yahoo.ycsb.Status;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Random;
 import java.util.Vector;
 
@@ -33,6 +35,7 @@ public class GenerateTwoTermExpKeys {
 
   public GenerateTwoTermExpKeys(long FLAGS_num) {
     keyrange_rand_max_ = FLAGS_num;
+    keyrange_set_ = new Vector<>();
     initiated_ = false;
   }
 
@@ -100,13 +103,15 @@ public class GenerateTwoTermExpKeys {
     // key-ranges are shuffled and the rand seed is only decide by the
     // key-range hotness distribution. With the same distribution parameters
     // the shuffle results are the same.
-    Random64 rand_loca = new Random64(keyrange_rand_max_);
-    for (int i = 0; i < keyrange_num; i++) {
-      int pos = (int) (rand_loca.Next() % keyrange_num);
-      assert (i >= 0 && i < (long) (keyrange_set_.size()) &&
-          pos >= 0 && pos < (long) (keyrange_set_.size()));
-      swap(i, pos, keyrange_set_);
-    }
+//    Random64 rand_loca = new Random64(keyrange_rand_max_);
+//    for (int i = 0; i < keyrange_num; i++) {
+//      int pos = (int) (rand_loca.Next() % keyrange_num);
+//      assert (i >= 0 && i < (long) (keyrange_set_.size()) &&
+//          pos >= 0 && pos < (long) (keyrange_set_.size()));
+//      swap(i, pos, keyrange_set_);
+//    }
+    Collections.shuffle(keyrange_set_);
+
 
     // Step 5. Recalculate the prefix start postion after shuffling
     long offset = 0;

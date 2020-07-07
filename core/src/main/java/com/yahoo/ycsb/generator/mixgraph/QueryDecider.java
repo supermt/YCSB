@@ -16,6 +16,9 @@ public class QueryDecider {
   public Status Initiate(Vector<Double> ratio_input) {
     int range_max = 1000;
     double sum = 0.0;
+    type_ = new Vector<>();
+    ratio_ = new Vector<>();
+
     for (Double ratio : ratio_input) {
       sum += ratio;
     }

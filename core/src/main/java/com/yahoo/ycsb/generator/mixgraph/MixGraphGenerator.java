@@ -26,17 +26,24 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
   GenerateTwoTermExpKeys gen_exp;
   boolean use_prefix_modeling = false;
   boolean use_random_modeling = false;
+  private int keys_per_prefix_ = 0;
+  private int prefix_size_;
+  private int key_size_;
 
 
   public MixGraphGenerator(long num,
                            double key_dist_a, double key_dist_b,
                            double keyrange_dist_a, double keyrange_dist_b,
                            double keyrange_dist_c, double keyrange_dist_d,
-                           long keyrange_num) {
+                           long keyrange_num, int key_size, int keys_per_prefix, int prefix_size) {
     super();
     this.num = num;
     this.a = key_dist_a;
     this.b = key_dist_b;
+    this.key_size_ = key_size;
+    this.keys_per_prefix_ = keys_per_prefix;
+    this.prefix_size_ = prefix_size;
+
     gen_exp = new GenerateTwoTermExpKeys(num);
     if (keyrange_dist_a != 0.0 || keyrange_dist_b != 0.0 ||
         keyrange_dist_c != 0.0 || keyrange_dist_d != 0.0) {
@@ -72,10 +79,27 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
   //   |        key 00000         |
   //   ----------------------------
   String GenerateKeyFromInt(long v, long num_keys) {
-    StringBuilder gen = new StringBuilder();
+    StringBuilder key = new StringBuilder();
     // TODO: learn how to generate the key string by a number
+    if (keys_per_prefix_ > 0) {
+      long num_prefix = num_keys / keys_per_prefix_;
+      long prefix = v % num_prefix;
+      int bytes_to_fill = Math.min(prefix_size_, 8);
+      // java uses big endian
+      key.append(String.valueOf(prefix), 0, bytes_to_fill);
+      while (prefix_size_ > 8) {
+        key.append('0');
+      }
+    }
 
-    return gen.toString();
+    int bytes_to_fill = Math.min(key_size_ - key.length(), 8);
+
+    key.append(String.valueOf(v), 0, bytes_to_fill);
+    while (key_size_ > key.length()){
+      key.append('0');
+    }
+
+    return key.toString();
   }
 
   private long PowerCdfInversion(double u, double a, double b) {
@@ -121,7 +145,7 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
         key_rand = (new Random(key_seed).nextLong()) % num;
     }
 
-    return new MixGraphKey(ini_rand, rand_v, key_rand, key_seed,GenerateKeyFromInt(key_rand, num));
+    return new MixGraphKey(ini_rand, rand_v, key_rand, key_seed, GenerateKeyFromInt(key_rand, num));
   }
 
   @Override

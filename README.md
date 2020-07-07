@@ -6,7 +6,7 @@ if you don't want to skip the checkstyle:
 `mvn -pl com.yahoo.ycsb:rocksdb-binding -am package -DskipTests=true`
 
 to skip the style checking
-`mvn -pl com.yahoo.ycsb:cassandra-binding -am package -DskipTests=true -Dcheckstyple.skip`
+`mvn -pl com.yahoo.ycsb:cassandra-binding -am package -DskipTests=true -Dcheckstyle.skip`
 
 # The main steps you need to following
 
@@ -14,7 +14,20 @@ I built the system by following this [link](http://www.programmersought.com/arti
 
 ## Step 1. Compile the RocksDB on your own computer
 
+install the java and cmake in your server first.
+
+```bash
+sudo apt-get install vagrant,default-jdk,cmake
+```
+
+
 the command is `make rocksdbjavastaticrelease -j8`, there might be some problem of showing `no such file`-like message, just go to the rocksdb's make file and delete whatever it said. Then, get the file in `java/target/rocksdbjni-version.number.jar`
+
+In some cases you may meet "fatal error jni.h no such file or directory", add the following line in your ~/.bashrc (ubuntu) or other configuration files for your terminal
+
+```bash
+export JAVA_INCLUDE_DIR="/usr/lib/jvm/default-java/include;/usr/lib/jvm/default-java/include/linux"
+```
 
 **DO Remember to change the version number of the file name into the version number in `pom.xml`**
 
