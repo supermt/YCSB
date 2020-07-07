@@ -25,15 +25,15 @@ Git clone YCSB and compile:
 
     git clone http://github.com/brianfrankcooper/YCSB.git
     cd YCSB
-    mvn -pl com.yahoo.ycsb:ignite-binding -am clean package
+    mvn -pl site.ycsb:ignite-binding -am clean package
 
 ### 2. Start Apache Ignite
 1.1 Download latest binary [Apache Ignite release](https://ignite.apache.org/download.cgi#binaries)
 
 1.2 Copy Ignite configs:
     
-    cp YCSB/ignite/resources/ignite.xml path/to/apache-ignite-**ignite_version**-bin
-    cp YCSB/ignite/resources/ignite-sql.xml path/to/apache-ignite-**ignite_version**-bin
+    cp YCSB/ignite/resources/config/ignite.xml path/to/apache-ignite-**ignite_version**-bin
+    cp YCSB/ignite/resources/config/ignite-sql.xml path/to/apache-ignite-**ignite_version**-bin
 
 NOTE: Pay attention that some parameters such us ****_storagePath_****, ****_walPath_****, ****_walArchivePath_****
      should be overwritten by certain pathes. Also please add ip addresses of your host(s) inside the bean ****_TcpDiscoveryVmIpFinder_****
