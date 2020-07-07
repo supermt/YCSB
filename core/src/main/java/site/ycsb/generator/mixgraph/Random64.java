@@ -1,4 +1,4 @@
-package com.yahoo.ycsb.generator.mixgraph;
+package site.ycsb.generator.mixgraph;
 
 import java.util.Random;
 

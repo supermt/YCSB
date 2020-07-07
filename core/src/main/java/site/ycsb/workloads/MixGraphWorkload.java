@@ -15,11 +15,13 @@
  * LICENSE file.
  */
 
-package com.yahoo.ycsb.workloads;
+package site.ycsb.workloads;
 
-import com.yahoo.ycsb.*;
-import com.yahoo.ycsb.generator.Generator;
-import com.yahoo.ycsb.generator.mixgraph.*;
+import site.ycsb.*;
+import site.ycsb.generator.mixgraph.MixGraphGenerator;
+import site.ycsb.generator.mixgraph.MixGraphKey;
+import site.ycsb.generator.mixgraph.QueryDecider;
+import site.ycsb.generator.mixgraph.Random64;
 
 import java.util.*;
 

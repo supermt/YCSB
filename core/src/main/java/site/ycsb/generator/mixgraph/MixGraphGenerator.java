@@ -1,16 +1,13 @@
-package com.yahoo.ycsb.generator.mixgraph;
+package site.ycsb.generator.mixgraph;
 
-import com.yahoo.ycsb.ByteIterator;
-import com.yahoo.ycsb.RandomByteIterator;
-import com.yahoo.ycsb.generator.Generator;
-import com.yahoo.ycsb.generator.NumberGenerator;
+import site.ycsb.ByteIterator;
+import site.ycsb.RandomByteIterator;
+import site.ycsb.generator.Generator;
+import site.ycsb.generator.NumberGenerator;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Properties;
 import java.util.Random;
-
-import static com.yahoo.ycsb.workloads.MixGraphWorkload.*;
 
 enum DistributionType {
   kFixed,
@@ -19,7 +16,9 @@ enum DistributionType {
 }
 
 public class MixGraphGenerator extends Generator<MixGraphKey> {
-  private RandomModels model;
+  private final RandomModels model;
+  private final int prefix_size_;
+  private final int key_size_;
   protected NumberGenerator fieldlengthgenerator;
   double a, b;
   long num;
@@ -27,8 +26,6 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
   boolean use_prefix_modeling = false;
   boolean use_random_modeling = false;
   private int keys_per_prefix_ = 0;
-  private int prefix_size_;
-  private int key_size_;
 
 
   public MixGraphGenerator(long num,
@@ -95,7 +92,7 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
     int bytes_to_fill = Math.min(key_size_ - key.length(), 8);
 
     key.append(String.valueOf(v), 0, bytes_to_fill);
-    while (key_size_ > key.length()){
+    while (key_size_ > key.length()) {
       key.append('0');
     }
 

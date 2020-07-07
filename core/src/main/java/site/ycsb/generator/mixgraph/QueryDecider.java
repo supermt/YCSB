@@ -1,6 +1,6 @@
-package com.yahoo.ycsb.generator.mixgraph;
+package site.ycsb.generator.mixgraph;
 
-import com.yahoo.ycsb.Status;
+import site.ycsb.Status;
 
 import java.util.Vector;
 
@@ -37,7 +37,7 @@ public class QueryDecider {
     }
     assert (range_ != 0);
     int pos = (int) (rand_num % range_);
-    for (int i = 0; i < (int) (type_.size()); i++) {
+    for (int i = 0; i < type_.size(); i++) {
       if (pos < type_.get(i)) {
         return i;
       }

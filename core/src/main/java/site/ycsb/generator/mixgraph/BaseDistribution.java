@@ -1,10 +1,11 @@
-package com.yahoo.ycsb.generator.mixgraph;
+package site.ycsb.generator.mixgraph;
 
 import java.util.Random;
 
 // A generator base class
 public abstract class BaseDistribution extends Random {
-  private long min_value_size_, max_value_size_;
+  private final long min_value_size_;
+  private final long max_value_size_;
 
   public BaseDistribution(long _min, long _max) {
     min_value_size_ = _min;
@@ -39,7 +40,7 @@ class UniformDistribution extends BaseDistribution {
 
 }
 
-class NormalDistribution extends BaseDistribution{
+class NormalDistribution extends BaseDistribution {
 
   public NormalDistribution(long _min, long _max) {
     super(_min, _max);
@@ -51,7 +52,7 @@ class NormalDistribution extends BaseDistribution{
   }
 }
 
-class FixedDistribution extends BaseDistribution{
+class FixedDistribution extends BaseDistribution {
 
   public FixedDistribution(long value_size) {
     super(value_size, value_size);

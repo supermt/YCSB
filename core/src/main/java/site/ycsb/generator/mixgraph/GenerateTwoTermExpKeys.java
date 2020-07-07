@@ -1,10 +1,9 @@
-package com.yahoo.ycsb.generator.mixgraph;
+package site.ycsb.generator.mixgraph;
 
-import com.yahoo.ycsb.Status;
 
-import java.util.Collection;
+import site.ycsb.Status;
+
 import java.util.Collections;
-import java.util.Random;
 import java.util.Vector;
 
 class KeyrangeUnit {
