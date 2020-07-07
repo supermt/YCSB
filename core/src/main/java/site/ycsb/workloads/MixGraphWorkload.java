@@ -23,7 +23,10 @@ import site.ycsb.generator.mixgraph.MixGraphKey;
 import site.ycsb.generator.mixgraph.QueryDecider;
 import site.ycsb.generator.mixgraph.Random64;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
  * this workload is inspired by the paper "Characterizing, Modeling,
@@ -166,6 +169,8 @@ public class MixGraphWorkload extends CoreWorkload {
 
   @Override
   public void init(final Properties p) throws WorkloadException {
+    System.out.println("Initial the parameters");
+
     super.init(p);
     ratio.add(Double.valueOf(p.getProperty(MIX_GET_RATIO_PROPERTY, MIX_GET_RARIO_DEFAULT)));
     ratio.add(Double.valueOf(p.getProperty(MIX_PUT_RATIO_PROPERTY, MIX_PUT_RATIO_DEFAULT)));
@@ -197,21 +202,19 @@ public class MixGraphWorkload extends CoreWorkload {
     iter_sigma = Double.valueOf(p.getProperty(ITER_SIGMA_PROPERTY, ITER_SIGMA_DEFAULT));
     iter_theta = Double.valueOf(p.getProperty(ITER_THETA_PROPERTY, ITER_THETA_DEFAULT));
 
-
     Status s;
     if (value_max > Integer.valueOf(p.getProperty(MIX_MAX_VALUE_SIZE_PROPERTY, MIX_MAX_VALUE_SIZE_DEFAULT))) {
       value_max = Integer.valueOf(p.getProperty(MIX_MAX_VALUE_SIZE_PROPERTY, MIX_MAX_VALUE_SIZE_DEFAULT));
     }
 
-
     //TODO: check if we need a ReadOption here, refer to the TimeSeriesWorkload.
     char[] value_buffer;
-    QueryDecider query = new QueryDecider();
+    query = new QueryDecider();
 
     query.Initiate(ratio);
     keysequence = new MixGraphGenerator(num, key_dist_a, key_dist_b,
         keyrange_dist_a, keyrange_dist_b, keyrange_dist_c, keyrange_dist_d, keyrange_num,
-        key_size, keys_per_prefix, prefix_size);
+        key_size, keys_per_prefix, prefix_size, getFieldLengthGenerator(p));
     // initiate finished
 
     // the limit of qps initiation

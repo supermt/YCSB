@@ -1,4 +1,4 @@
-workload=com.yahoo.ycsb.workloads.MixGraphWorkload
+workload=site.ycsb.workloads.MixGraphWorkload
 
 num=12345678
 operationcount=2949120

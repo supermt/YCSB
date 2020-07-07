@@ -55,9 +55,11 @@ SCRIPT_DIR=$(dirname "$0" 2>/dev/null)
 
 # Core dependencies from Maven
 CLASSPATH_FILE=$(mktemp)
-mvn -pl com.yahoo.ycsb:core dependency:build-classpath -Dmdep.outputFile=$CLASSPATH_FILE
+mvn -pl site.ycsb:core dependency:build-classpath -Dmdep.outputFile=$CLASSPATH_FILE
 CLASSPATH_MVN=$(cat $CLASSPATH_FILE)
 CLASSPATH=$CLASSPATH:$CLASSPATH_MVN
+
+echo $CLASSPATH
 
 # Pull in customization options
 if [ -r "$YCSB_HOME/bin/setenv.sh" ]; then

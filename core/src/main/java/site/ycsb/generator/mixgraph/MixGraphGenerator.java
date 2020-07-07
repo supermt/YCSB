@@ -32,7 +32,8 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
                            double key_dist_a, double key_dist_b,
                            double keyrange_dist_a, double keyrange_dist_b,
                            double keyrange_dist_c, double keyrange_dist_d,
-                           long keyrange_num, int key_size, int keys_per_prefix, int prefix_size) {
+                           long keyrange_num, int key_size, int keys_per_prefix, int prefix_size,
+                           NumberGenerator _fieldlengthgenerator) {
     super();
     this.num = num;
     this.a = key_dist_a;
@@ -40,6 +41,7 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
     this.key_size_ = key_size;
     this.keys_per_prefix_ = keys_per_prefix;
     this.prefix_size_ = prefix_size;
+    this.fieldlengthgenerator = _fieldlengthgenerator;
 
     gen_exp = new GenerateTwoTermExpKeys(num);
     if (keyrange_dist_a != 0.0 || keyrange_dist_b != 0.0 ||
@@ -90,8 +92,12 @@ public class MixGraphGenerator extends Generator<MixGraphKey> {
     }
 
     int bytes_to_fill = Math.min(key_size_ - key.length(), 8);
-
-    key.append(String.valueOf(v), 0, bytes_to_fill);
+    String key_filled = String.valueOf(v);
+    if (key_filled.length()>bytes_to_fill){
+      key.append(String.valueOf(v), 0, bytes_to_fill);
+    }else {
+      key.append(key_filled);
+    }
     while (key_size_ > key.length()) {
       key.append('0');
     }

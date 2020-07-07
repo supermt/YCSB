@@ -3,10 +3,10 @@
 use the following command:
 
 if you don't want to skip the checkstyle:
-`mvn -pl com.yahoo.ycsb:rocksdb-binding -am package -DskipTests=true`
+`mvn -pl site.ycsb:rocksdb-binding -am package -DskipTests=true`
 
 to skip the style checking
-`mvn -pl com.yahoo.ycsb:cassandra-binding -am package -DskipTests=true -Dcheckstyle.skip`
+`mvn -pl site.ycsb:cassandra-binding -am package -DskipTests=true -Dcheckstyle.skip`
 
 # The main steps you need to following
 
