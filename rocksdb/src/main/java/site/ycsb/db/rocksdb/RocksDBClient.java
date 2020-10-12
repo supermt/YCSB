@@ -91,6 +91,10 @@ public class RocksDBClient extends DB {
           throw new DBException(e);
         }
       }
+      if (getTuningAdvisor()!=null){
+        // the advisors have been set up.
+        getTuningAdvisor().setUpDefaultOptions();
+      }
 
       references++;
     }
@@ -109,6 +113,7 @@ public class RocksDBClient extends DB {
     }
 
     final DBOptions options = new DBOptions();
+
     final List<ColumnFamilyDescriptor> cfDescriptors = new ArrayList<>();
     final List<ColumnFamilyHandle> cfHandles = new ArrayList<>();
 

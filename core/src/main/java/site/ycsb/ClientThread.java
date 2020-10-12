@@ -44,6 +44,7 @@ public class ClientThread implements Runnable {
   private Properties props;
   private long targetOpsTickNs;
   private final Measurements measurements;
+  private final TuningAdvisor tuningAdvisor;
 
   /**
    * Constructor.
@@ -71,6 +72,7 @@ public class ClientThread implements Runnable {
     measurements = Measurements.getMeasurements();
     spinSleep = Boolean.valueOf(this.props.getProperty("spin.sleep", "false"));
     this.completeLatch = completeLatch;
+    this.tuningAdvisor = this.db.getTuningAdvisor();
   }
 
   public void setThreadId(final int threadId) {

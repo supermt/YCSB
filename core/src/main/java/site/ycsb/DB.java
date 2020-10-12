@@ -17,11 +17,7 @@
 
 package site.ycsb;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * A layer for accessing a database to be benchmarked. Each thread in the client
@@ -29,17 +25,17 @@ import java.util.Vector;
  * This class should be constructed using a no-argument constructor, so we can
  * load it dynamically. Any argument-based initialization should be
  * done by init().
- *
+ * <p>
  * Note that YCSB does not make any use of the return codes returned by this class.
  * Instead, it keeps a count of the return values and presents them to the user.
- *
+ * <p>
  * The semantics of methods such as insert, update and delete vary from database
  * to database.  In particular, operations may or may not be durable once these
  * methods commit, and some systems may return 'success' regardless of whether
  * or not a tuple with a matching key existed before the call.  Rather than dictate
  * the exact semantics of these methods, we recommend you either implement them
- * to match the database's default semantics, or the semantics of your 
- * target application.  For the sake of comparison between experiments we also 
+ * to match the database's default semantics, or the semantics of your
+ * target application.  For the sake of comparison between experiments we also
  * recommend you explain the semantics you chose when presenting performance results.
  */
 public abstract class DB {
@@ -47,13 +43,13 @@ public abstract class DB {
    * Properties for configuring this DB.
    */
   private Properties properties = new Properties();
+  private TuningAdvisor tuningAdvisor = null;
 
-  /**
-   * Set the properties for this DB.
-   */
-  public void setProperties(Properties p) {
-    properties = p;
-
+  public void setTuningAdvisor(TuningAdvisor t) {
+    this.tuningAdvisor = t;
+  }
+  public TuningAdvisor getTuningAdvisor(){
+    return this.tuningAdvisor;
   }
 
   /**
@@ -61,6 +57,14 @@ public abstract class DB {
    */
   public Properties getProperties() {
     return properties;
+  }
+
+  /**
+   * Set the properties for this DB.
+   */
+  public void setProperties(Properties p) {
+    properties = p;
+
   }
 
   /**
@@ -80,8 +84,8 @@ public abstract class DB {
   /**
    * Read a record from the database. Each field/value pair from the result will be stored in a HashMap.
    *
-   * @param table The name of the table
-   * @param key The record key of the record to read.
+   * @param table  The name of the table
+   * @param key    The record key of the record to read.
    * @param fields The list of fields to read, or null for all of them
    * @param result A HashMap of field/value pairs for the result
    * @return The result of the operation.
@@ -92,11 +96,11 @@ public abstract class DB {
    * Perform a range scan for a set of records in the database. Each field/value pair from the result will be stored
    * in a HashMap.
    *
-   * @param table The name of the table
-   * @param startkey The record key of the first record to read.
+   * @param table       The name of the table
+   * @param startkey    The record key of the first record to read.
    * @param recordcount The number of records to read
-   * @param fields The list of fields to read, or null for all of them
-   * @param result A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
+   * @param fields      The list of fields to read, or null for all of them
+   * @param result      A Vector of HashMaps, where each HashMap is a set field/value pairs for one record
    * @return The result of the operation.
    */
   public abstract Status scan(String table, String startkey, int recordcount, Set<String> fields,
@@ -106,8 +110,8 @@ public abstract class DB {
    * Update a record in the database. Any field/value pairs in the specified values HashMap will be written into the
    * record with the specified record key, overwriting any existing values with the same field name.
    *
-   * @param table The name of the table
-   * @param key The record key of the record to write.
+   * @param table  The name of the table
+   * @param key    The record key of the record to write.
    * @param values A HashMap of field/value pairs to update in the record
    * @return The result of the operation.
    */
@@ -117,8 +121,8 @@ public abstract class DB {
    * Insert a record in the database. Any field/value pairs in the specified values HashMap will be written into the
    * record with the specified record key.
    *
-   * @param table The name of the table
-   * @param key The record key of the record to insert.
+   * @param table  The name of the table
+   * @param key    The record key of the record to insert.
    * @param values A HashMap of field/value pairs to insert in the record
    * @return The result of the operation.
    */
@@ -128,7 +132,7 @@ public abstract class DB {
    * Delete a record from the database.
    *
    * @param table The name of the table
-   * @param key The record key of the record to delete.
+   * @param key   The record key of the record to delete.
    * @return The result of the operation.
    */
   public abstract Status delete(String table, String key);

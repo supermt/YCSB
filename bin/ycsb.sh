@@ -101,6 +101,8 @@ fi
 
 # Find binding information
 BINDING_LINE=$(grep "^$2:" "$YCSB_HOME/bin/bindings.properties" -m 1)
+ADVISOR_LINE=$(grep "^$2:" "$YCSB_HOME/bin/advisor_bindings.properties" -m 1)
+
 
 if [ -z "$BINDING_LINE" ] ; then
   echo "[ERROR] The specified binding '$2' was not found.  Exiting."
@@ -110,6 +112,7 @@ fi
 # Get binding name and class
 BINDING_NAME=$(echo "$BINDING_LINE" | cut -d':' -f1)
 BINDING_CLASS=$(echo "$BINDING_LINE" | cut -d':' -f2)
+
 
 # Some bindings have multiple versions that are managed in the same directory.
 #   They are noted with a '-' after the binding name.
@@ -256,6 +259,13 @@ fi
 YCSB_ARGS=$(echo "$@" | cut -d' ' -f3-)
 
 export JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+
+# Detect advisor binding
+if [ -z "$ADVISOR_LINE"  ]; then 
+  echo "Starting DBs without binding advisor"
+else
+  echo "Starting a DB with binding advisor"
+fi
 
 # About to run YCSB
 echo "$JAVA_HOME/bin/java $JAVA_OPTS -classpath $CLASSPATH $YCSB_CLASS $YCSB_COMMAND -db $BINDING_CLASS $YCSB_ARGS"

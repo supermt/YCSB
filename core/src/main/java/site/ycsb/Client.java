@@ -125,6 +125,18 @@ public final class Client {
   public static final String INSERT_COUNT_PROPERTY = "insertcount";
 
   /**
+   * Indicate the size of time windows, which decides the time gap of waking the tuning advisor
+   * -1 means disabling the auto tuning strategy.
+   * 0 means being decide by the tuning advisor
+   * >0 means after certain million seconds, wake the tuning advisor.
+   */
+
+  public static final String TUNING_GAP = "tuninggap";
+
+  public static final String TUNING_ADVISOR_BINDING = "advisorbinding";
+  public static final String TUNING_ADVISOR_BINDING_DEFAULT = "site.ycsb.TuningAdvisor";
+
+  /**
    * Target number of operations per second.
    */
   public static final String TARGET_PROPERTY = "target";
@@ -285,6 +297,8 @@ public final class Client {
     //get number of threads, target and db
     int threadcount = Integer.parseInt(props.getProperty(THREAD_COUNT_PROPERTY, "1"));
     String dbname = props.getProperty(DB_PROPERTY, "site.ycsb.BasicDB");
+
+
     int target = Integer.parseInt(props.getProperty(TARGET_PROPERTY, "0"));
 
     //compute the target throughput
@@ -307,9 +321,10 @@ public final class Client {
 
     System.err.println("Starting test.");
     final CountDownLatch completeLatch = new CountDownLatch(threadcount);
-
+    System.out.println(dbname);
     final List<ClientThread> clients = initDb(dbname, props, threadcount, targetperthreadperms,
         workload, tracer, completeLatch);
+
 
     if (status) {
       boolean standardstatus = false;
@@ -400,6 +415,8 @@ public final class Client {
     System.exit(0);
   }
 
+
+
   private static List<ClientThread> initDb(String dbname, Properties props, int threadcount,
                                            double targetperthreadperms, Workload workload, Tracer tracer,
                                            CountDownLatch completeLatch) {
@@ -431,6 +448,26 @@ public final class Client {
           initFailed = true;
           break;
         }
+
+        // check the binding of DOTA-framework
+        // add by jinghuan
+        String advisor_binder = props.getProperty(TUNING_ADVISOR_BINDING,TUNING_ADVISOR_BINDING_DEFAULT);
+        int tuning_gap = Integer.valueOf(props.getProperty(TUNING_GAP,String.valueOf(-1)));
+        System.out.println("tuning advisor binded:" + advisor_binder);
+        if (tuning_gap >= 0){
+          TuningAdvisor ta;
+//      provideBasicDBOptions();
+          // larger than 1, create tuning advisor agent
+          try{
+            ta = TuningAdvisorFactory.newTA(advisor_binder,props);
+            db.setTuningAdvisor(ta);
+          }catch (UnknownDBException e){
+            System.out.println("Unknown DB Advisor " + advisor_binder);
+            initFailed = true;
+            break;
+          }
+        }
+
 
         int threadopcount = opcount / threadcount;
 
